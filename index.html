@@ -1,519 +1,707 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-
-<title>工具機 AI 維修單助手</title>
-
-<style>
-:root {
-  --bg: #0b0d12;
-  --card: #151922;
-  --card2: #1b202b;
-  --border: #2a3140;
-  --text: #e8eaed;
-  --muted: #9aa3b2;
-  --accent: #7aa2ff;
-  --accent2: #5d83e6;
-  --ok: #6bcf8e;
-  --warn: #e6b84d;
-  --err: #f07178;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html,
-body {
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100%;
-}
-
-body {
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  min-height: 100dvh;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-
-  padding:
-    12px
-    14px
-    11px;
-
-  background: rgba(21, 25, 34, .96);
-  backdrop-filter: blur(12px);
-
-  border-bottom: 1px solid var(--border);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.title {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.sub {
-  font-size: .7rem;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-.badge {
-  font-size: .72rem;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: #222833;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.badge.ok {
-  color: var(--ok);
-}
-
-.badge.warn {
-  color: var(--warn);
-}
-
-.badge.err {
-  color: var(--err);
-}
-
-main {
-  width: 100%;
-  max-width: 760px;
-  margin: auto;
-  padding: 14px;
-}
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  padding: 15px;
-  margin-bottom: 12px;
-}
-
-.card-title {
-  font-size: .95rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.field {
-  margin-bottom: 10px;
-}
-
-.field:last-child {
-  margin-bottom: 0;
-}
-
-label {
-  display: block;
-  font-size: .76rem;
-  color: var(--muted);
-  margin-bottom: 5px;
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-
-  border: 1px solid var(--border);
-  border-radius: 10px;
-
-  background: #1e2430;
-  color: var(--text);
-
-  padding: 11px 12px;
-
-  font-family: inherit;
-  font-size: 16px;
-
-  outline: none;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--accent);
-}
-
-textarea {
-  min-height: 120px;
-  resize: vertical;
-  line-height: 1.55;
-}
-
-.problem textarea {
-  min-height: 135px;
-}
-
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-
-  margin-bottom: 7px;
-}
-
-.section-name {
-  font-size: .9rem;
-  font-weight: 700;
-}
-
-.ai-btn {
-  border: 1px solid #3a4d78;
-  background: #1a2740;
-  color: #9db8ff;
-
-  border-radius: 8px;
-
-  padding: 7px 9px;
-
-  font-size: .72rem;
-  font-weight: 600;
-
-  white-space: nowrap;
-}
-
-.ai-btn:active {
-  transform: scale(.97);
-}
-
-.ai-btn:disabled {
-  opacity: .4;
-}
-
-.ai-box {
-  display: none;
-
-  margin-top: 9px;
-
-  border: 1px solid #34425e;
-  background: #111824;
-
-  border-radius: 10px;
-
-  padding: 11px;
-}
-
-.ai-box.show {
-  display: block;
-}
-
-.ai-title {
-  color: #9db8ff;
-  font-size: .72rem;
-  font-weight: 700;
-  margin-bottom: 7px;
-}
-
-.ai-text {
-  color: #dce2ed;
-  font-size: .83rem;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.ai-actions {
-  display: flex;
-  gap: 7px;
-  margin-top: 9px;
-}
-
-.ai-actions button {
-  flex: 1;
-  border-radius: 8px;
-  padding: 8px;
-
-  font-family: inherit;
-  font-size: .75rem;
-}
-
-.use-btn {
-  border: none;
-  background: var(--accent);
-  color: #0b0d12;
-  font-weight: 700;
-}
-
-.retry-btn {
-  border: 1px solid var(--border);
-  background: #202632;
-  color: var(--text);
-}
-
-.big-ai {
-  width: 100%;
-
-  border: 1px solid #42547e;
-  background: #192642;
-  color: #aec2ff;
-
-  border-radius: 11px;
-
-  padding: 12px;
-
-  font-family: inherit;
-  font-size: .88rem;
-  font-weight: 700;
-
-  margin-top: 5px;
-}
-
-.big-ai:disabled {
-  opacity: .4;
-}
-
-.result {
-  display: none;
-
-  margin-top: 10px;
-
-  background: #10151f;
-  border: 1px solid var(--border);
-
-  border-radius: 11px;
-  padding: 12px;
-}
-
-.result.show {
-  display: block;
-}
-
-.result-title {
-  font-size: .8rem;
-  color: var(--accent);
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.result-text {
-  white-space: pre-wrap;
-  font-size: .84rem;
-  line-height: 1.6;
-}
-
-.actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-}
-
-button {
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.action-btn {
-  border: none;
-  border-radius: 10px;
-  padding: 12px;
-
-  background: #252b36;
-  color: var(--text);
-
-  font-size: .86rem;
-  font-weight: 600;
-}
-
-.action-btn.primary {
-  background: var(--accent);
-  color: #0b0d12;
-}
-
-.action-btn.danger {
-  color: #ff9ca1;
-}
-
-.setup {
-  background: #111722;
-}
-
-.setup p {
-  color: var(--muted);
-  font-size: .77rem;
-  line-height: 1.5;
-  margin-bottom: 10px;
-}
-
-#loadBtn {
-  width: 100%;
-  border: none;
-  border-radius: 10px;
-
-  background: var(--accent);
-  color: #0b0d12;
-
-  padding: 12px;
-
-  font-size: .9rem;
-  font-weight: 700;
-}
-
-#loadBtn:disabled {
-  opacity: .45;
-}
-
-.progress {
-  margin-top: 9px;
-
-  min-height: 1.2em;
-
-  color: var(--muted);
-
-  font-size: .72rem;
-  line-height: 1.45;
-}
-
-.bar {
-  height: 5px;
-  background: #222833;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 7px;
-}
-
-.bar i {
-  display: block;
-  height: 100%;
-  width: 0%;
-  background: var(--accent);
-  transition: width .2s;
-}
-
-.debug {
-  margin-top: 9px;
-
-  color: #737e91;
-
-  font-size: .67rem;
-  line-height: 1.45;
-
-  white-space: pre-wrap;
-}
-
-.footer {
-  text-align: center;
-
-  color: #697385;
-
-  font-size: .67rem;
-
-  padding:
-    5px
-    10px
-    20px;
-}
-
-@media (max-width: 600px) {
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  main {
-    padding: 10px;
-  }
-
-  .card {
-    padding: 13px;
-  }
-
-  .actions {
-    grid-template-columns: 1fr;
-  }
-
-}
-
-@media print {
-
-  body {
-    background: white;
-    color: black;
-  }
-
-  header {
-    position: static;
-    background: white;
-    color: black;
-    border-bottom: 1px solid #ccc;
-  }
-
-  .setup,
-  .ai-btn,
-  .ai-box,
-  .big-ai,
-  .actions,
-  .footer,
-  .debug {
-    display: none !important;
-  }
-
-  main {
-    max-width: none;
-  }
-
-  .card {
-    background: white;
-    border: 1px solid #ccc;
-    color: black;
-    break-inside: avoid;
-  }
-
-  input,
-  textarea {
-    background: white;
-    color: black;
-    border: 1px solid #aaa;
-  }
-
-  label,
-  .sub {
-    color: #555;
-  }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+  />
+
+  <title>工具機 AI 維修單</title>
+
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --card: #151922;
+      --card2: #10141c;
+      --border: #2a3140;
+      --text: #e8eaed;
+      --muted: #9aa3b2;
+      --accent: #7aa2ff;
+      --accent2: #5d8df7;
+      --ok: #6bcf8e;
+      --warn: #e6b84d;
+      --err: #f07178;
+      --user: #1a3358;
+      --ai: #1c2333;
+      --white: #ffffff;
+      --print-text: #111111;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background: var(--bg);
+      color: var(--text);
+
+      min-height: 100dvh;
+
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* =========================
+       Header
+    ========================= */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+
+      padding:
+        12px
+        14px
+        12px
+        14px;
+
+      background: rgba(21, 25, 34, 0.96);
+
+      backdrop-filter: blur(12px);
+
+      border-bottom:
+        1px solid var(--border);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 12px;
+    }
+
+    .header-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .header-sub {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .badge {
+      flex-shrink: 0;
+
+      font-size: 0.72rem;
+
+      padding: 5px 9px;
+
+      border-radius: 999px;
+
+      background: #222833;
+
+      color: var(--muted);
+    }
+
+    .badge.ok {
+      color: var(--ok);
+    }
+
+    .badge.warn {
+      color: var(--warn);
+    }
+
+    .badge.err {
+      color: var(--err);
+    }
+
+    /* =========================
+       Main
+    ========================= */
+
+    main {
+      width: 100%;
+      max-width: 760px;
+
+      margin: 0 auto;
+
+      padding: 14px;
+    }
+
+    .section {
+      background: var(--card);
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 15px;
+
+      padding: 14px;
+
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 8px;
+
+      margin-bottom: 12px;
+    }
+
+    .section-title h2 {
+      font-size: 0.98rem;
+    }
+
+    .section-title span {
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    /* =========================
+       Model
+    ========================= */
+
+    .model-info {
+      font-size: 0.78rem;
+
+      line-height: 1.5;
+
+      color: var(--muted);
+
+      margin-bottom: 12px;
+    }
+
+    select {
+      width: 100%;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 10px;
+
+      background: #1e2430;
+
+      color: var(--text);
+
+      padding: 11px 12px;
+
+      font-size: 0.9rem;
+
+      margin-bottom: 9px;
+
+      outline: none;
+    }
+
+    .btn {
+      border: none;
+
+      border-radius: 10px;
+
+      padding: 11px 13px;
+
+      font-size: 0.88rem;
+
+      font-weight: 600;
+
+      transition: opacity 0.15s;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      width: 100%;
+
+      background: var(--accent);
+
+      color: #0b0d12;
+    }
+
+    .btn-secondary {
+      background: #252b36;
+
+      color: var(--text);
+
+      border:
+        1px solid var(--border);
+    }
+
+    .btn-ai {
+      background: #26334f;
+
+      color: #bcd0ff;
+
+      border:
+        1px solid #3b4f79;
+    }
+
+    .btn-ok {
+      background: #203d2d;
+
+      color: #8ee8aa;
+
+      border:
+        1px solid #315f43;
+    }
+
+    .btn-danger {
+      background: #3a2226;
+
+      color: #ff9ba1;
+
+      border:
+        1px solid #63343a;
+    }
+
+    .progress-bar {
+      height: 6px;
+
+      background: #1e2430;
+
+      border-radius: 4px;
+
+      overflow: hidden;
+
+      margin-top: 9px;
+    }
+
+    .progress-bar i {
+      display: block;
+
+      height: 100%;
+
+      width: 0%;
+
+      background: var(--accent);
+
+      transition: width 0.2s;
+    }
+
+    #progressText {
+      font-size: 0.72rem;
+
+      color: var(--muted);
+
+      line-height: 1.45;
+
+      margin-top: 8px;
+
+      min-height: 1.2em;
+
+      white-space: pre-wrap;
+    }
+
+    /* =========================
+       Form
+    ========================= */
+
+    .grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 10px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+
+      font-size: 0.78rem;
+
+      color: var(--muted);
+
+      margin-bottom: 6px;
+    }
+
+    label .required {
+      color: var(--err);
+
+      margin-left: 2px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 10px;
+
+      background: #1e2430;
+
+      color: var(--text);
+
+      outline: none;
+    }
+
+    input {
+      min-height: 44px;
+
+      padding: 10px 12px;
+
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 130px;
+
+      resize: vertical;
+
+      padding: 11px 12px;
+
+      font-size: 16px;
+
+      line-height: 1.55;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--accent);
+    }
+
+    .counter {
+      text-align: right;
+
+      font-size: 0.65rem;
+
+      color: var(--muted);
+
+      margin-top: 4px;
+    }
+
+    /* =========================
+       AI Area
+    ========================= */
+
+    .ai-tools {
+      display: flex;
+
+      gap: 8px;
+
+      margin-top: 8px;
+    }
+
+    .ai-tools .btn {
+      flex: 1;
+    }
+
+    .ai-suggestion {
+      display: none;
+
+      margin-top: 10px;
+
+      background: var(--card2);
+
+      border:
+        1px solid #35415a;
+
+      border-radius: 12px;
+
+      padding: 11px;
+    }
+
+    .ai-suggestion.show {
+      display: block;
+    }
+
+    .ai-label {
+      color: #a9c1ff;
+
+      font-size: 0.72rem;
+
+      font-weight: 700;
+
+      margin-bottom: 7px;
+    }
+
+    .ai-text {
+      white-space: pre-wrap;
+
+      word-break: break-word;
+
+      font-size: 0.84rem;
+
+      line-height: 1.55;
+
+      color: var(--text);
+
+      margin-bottom: 9px;
+    }
+
+    .ai-actions {
+      display: flex;
+
+      gap: 7px;
+    }
+
+    .ai-actions button {
+      flex: 1;
+    }
+
+    .ai-status {
+      font-size: 0.7rem;
+
+      color: var(--muted);
+
+      margin-top: 6px;
+
+      min-height: 1em;
+    }
+
+    /* =========================
+       Preview
+    ========================= */
+
+    .preview {
+      display: none;
+
+      background: white;
+
+      color: var(--print-text);
+
+      border-radius: 10px;
+
+      padding: 24px;
+
+      margin-top: 10px;
+    }
+
+    .preview.show {
+      display: block;
+    }
+
+    .preview h1 {
+      font-size: 1.35rem;
+
+      text-align: center;
+
+      margin-bottom: 18px;
+    }
+
+    .preview-table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      font-size: 0.82rem;
+    }
+
+    .preview-table th,
+    .preview-table td {
+      border: 1px solid #888;
+
+      padding: 8px;
+
+      vertical-align: top;
+
+      text-align: left;
+    }
+
+    .preview-table th {
+      width: 23%;
+
+      background: #f1f1f1;
+    }
+
+    .preview-note {
+      margin-top: 15px;
+
+      font-size: 0.7rem;
+
+      color: #555;
+    }
+
+    /* =========================
+       Bottom
+    ========================= */
+
+    .bottom-actions {
+      display: flex;
+
+      gap: 8px;
+
+      margin-bottom: 30px;
+    }
+
+    .bottom-actions .btn {
+      flex: 1;
+    }
+
+    .footer-note {
+      text-align: center;
+
+      color: var(--muted);
+
+      font-size: 0.68rem;
+
+      line-height: 1.5;
+
+      padding-bottom: 20px;
+    }
+
+    /* =========================
+       Debug
+    ========================= */
+
+    details.debug {
+      margin-top: 10px;
+    }
+
+    details.debug summary {
+      cursor: pointer;
+
+      color: var(--muted);
+
+      font-size: 0.7rem;
+    }
+
+    #debug {
+      margin-top: 8px;
+
+      background: #0e1219;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 9px;
+
+      padding: 10px;
+
+      font-size: 0.65rem;
+
+      line-height: 1.5;
+
+      color: var(--muted);
+
+      white-space: pre-wrap;
+
+      word-break: break-word;
+    }
+
+    /* =========================
+       Mobile
+    ========================= */
+
+    @media (max-width: 560px) {
+      main {
+        padding: 10px;
+      }
+
+      .section {
+        padding: 12px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .preview {
+        padding: 14px;
+      }
+
+      .preview-table {
+        font-size: 0.72rem;
+      }
+    }
+
+    /* =========================
+       Print
+    ========================= */
+
+    @media print {
+      body {
+        background: white;
+
+        color: black;
+      }
+
+      header,
+      main > .section:not(#previewSection),
+      .bottom-actions,
+      .footer-note {
+        display: none !important;
+      }
+
+      #previewSection {
+        display: block !important;
+
+        border: none;
+
+        padding: 0;
+
+        margin: 0;
+      }
+
+      .preview {
+        display: block !important;
+
+        border-radius: 0;
+
+        padding: 0;
+      }
+
+      .preview h1 {
+        color: black;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
   <div>
-    <div class="title">🔧 工具機 AI 維修單</div>
-    <div class="sub">維修人員手動填寫 · AI 僅提供輔助建議</div>
+    <div class="header-title">
+      🔧 工具機 AI 維修單
+    </div>
+
+    <div class="header-sub">
+      現場填寫 · AI 輔助整理 · 不保存歷史
+    </div>
   </div>
 
-  <div id="status" class="badge warn">
+  <div
+    id="status"
+    class="badge warn"
+  >
     未載入
   </div>
 </header>
@@ -521,25 +709,27 @@ button {
 
 <main>
 
-  <!-- =========================
-       AI MODEL
-  ========================== -->
+  <!-- =====================
+       AI 模型
+  ====================== -->
 
-  <section class="card setup">
+  <section class="section">
 
-    <div class="card-title">
-      🤖 AI 模型
+    <div class="section-title">
+      <h2>🤖 AI 模型</h2>
+
+      <span>
+        WebLLM · 裝置端
+      </span>
     </div>
 
-    <p>
-      AI 在瀏覽器本機執行。第一次使用需要下載模型。
-      建議手機先使用 0.5B～1B 模型。
-    </p>
+    <div class="model-info">
+      AI 僅協助把你手動輸入的內容整理成較正式的維修紀錄。
+      <br>
+      不會自動捏造故障原因、數值或檢查結果。
+    </div>
 
     <select id="model">
-      <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC" selected>
-        Llama 3.2 1B Instruct（約 879 MB）
-      </option>
 
       <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">
         Qwen2.5 0.5B Instruct
@@ -549,7 +739,14 @@ button {
         Qwen3 0.6B
       </option>
 
-      <option value="Gemma-3-1b-it-q4f16_1-MLC">
+      <option
+        value="Llama-3.2-1B-Instruct-q4f16_1-MLC"
+        selected
+      >
+        Llama 3.2 1B Instruct（q4）
+      </option>
+
+      <option value="gemma-3-1b-it-q4f16_1-MLC">
         Gemma 3 1B
       </option>
 
@@ -561,78 +758,123 @@ button {
         Qwen3 1.7B
       </option>
 
-      <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">
-        Phi-3.5 Mini Instruct
-      </option>
-
-      <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">
-        SmolLM2 360M
-      </option>
     </select>
 
-    <br><br>
-
-    <button id="loadBtn">
+    <button
+      type="button"
+      id="loadBtn"
+      class="btn btn-primary"
+    >
       載入 AI 模型
     </button>
 
-    <div class="bar">
-      <i id="bar"></i>
+    <button
+      type="button"
+      id="clearCacheBtn"
+      class="btn btn-secondary"
+      style="width:100%;margin-top:8px;"
+    >
+      🧹 清除模型快取
+    </button>
+
+    <div class="progress-bar">
+      <i id="progressBar"></i>
     </div>
 
-    <div id="progress" class="progress">
-      等待載入。
+    <div id="progressText">
+      第一次使用需要下載模型。
     </div>
 
-    <div id="debug" class="debug">
-      WebGPU：檢查中…
-    </div>
+    <details class="debug">
+
+      <summary>
+        顯示診斷資訊
+      </summary>
+
+      <div id="debug">
+        初始化中…
+      </div>
+
+    </details>
 
   </section>
 
 
-  <!-- =========================
-       BASIC INFO
-  ========================== -->
+  <!-- =====================
+       基本資料
+  ====================== -->
 
-  <section class="card">
+  <section class="section">
 
-    <div class="card-title">
-      📋 基本資料
+    <div class="section-title">
+      <h2>📋 維修基本資料</h2>
+
+      <span>
+        手動填寫
+      </span>
     </div>
 
     <div class="grid">
 
       <div class="field">
-        <label>機台編號</label>
-        <input
-          id="machineId"
-          placeholder="例如：MC-001"
-        >
-      </div>
 
-      <div class="field">
-        <label>機台名稱</label>
+        <label>
+          機台名稱
+        </label>
+
         <input
           id="machineName"
+          type="text"
           placeholder="例如：立式加工中心"
-        >
+          maxlength="100"
+        />
+
       </div>
 
-      <div class="field">
-        <label>維修人員</label>
-        <input
-          id="technician"
-          placeholder="輸入姓名"
-        >
-      </div>
 
       <div class="field">
-        <label>維修日期</label>
+
+        <label>
+          機台編號
+        </label>
+
         <input
-          id="date"
-          type="datetime-local"
-        >
+          id="machineNo"
+          type="text"
+          placeholder="例如：MC-01"
+          maxlength="50"
+        />
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          維修日期
+        </label>
+
+        <input
+          id="repairDate"
+          type="date"
+        />
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          維修人員
+        </label>
+
+        <input
+          id="repairer"
+          type="text"
+          placeholder="姓名"
+          maxlength="50"
+        />
+
       </div>
 
     </div>
@@ -640,325 +882,311 @@ button {
   </section>
 
 
-  <!-- =========================
-       PROBLEM
-  ========================== -->
+  <!-- =====================
+       問題及現象
+  ====================== -->
 
-  <section class="card problem">
+  <section class="section">
 
-    <div class="section-head">
+    <div class="section-title">
 
-      <div class="section-name">
+      <h2>
         ① 問題及現象
+      </h2>
+
+      <span>
+        手動填寫
+      </span>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        請描述設備發生什麼問題
+        <span class="required">*</span>
+      </label>
+
+      <textarea
+        id="problem"
+        maxlength="1000"
+        placeholder="例如：
+主軸高速運轉時有異音，轉速越高越明顯，低速時不明顯。"
+      ></textarea>
+
+      <div
+        class="counter"
+        id="problemCounter"
+      >
+        0 / 1000
       </div>
 
+    </div>
+
+
+    <div class="ai-tools">
+
       <button
-        class="ai-btn"
-        data-field="problem"
+        type="button"
+        id="analyzeProblemBtn"
+        class="btn btn-ai"
+        disabled
       >
-        ✨ AI 建議
+        ✨ AI 建議寫法
       </button>
 
     </div>
 
-    <label>
-      請先依現場實際情況手動描述
-    </label>
-
-    <textarea
-      id="problem"
-      placeholder="例如：
-X軸快速移動時出現異常聲音，低速移動時比較不明顯。"
-    ></textarea>
-
-    <div id="problemAI" class="ai-box">
-
-      <div class="ai-title">
-        ✨ AI 建議
-      </div>
-
-      <div class="ai-text"></div>
-
-      <div class="ai-actions">
-
-        <button class="use-btn">
-          採用
-        </button>
-
-        <button class="retry-btn">
-          重新產生
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       CHECK
-  ========================== -->
-
-  <section class="card">
-
-    <div class="section-head">
-
-      <div class="section-name">
-        ② 檢查結果
-      </div>
-
-      <button
-        class="ai-btn"
-        data-field="check"
-      >
-        ✨ AI 輔助
-      </button>
-
-    </div>
-
-    <label>
-      實際檢查、量測或測試結果
-    </label>
-
-    <textarea
-      id="check"
-      placeholder="例如：
-檢查X軸線性滑軌，發現潤滑油不足。
-手動移動時有輕微阻力。"
-    ></textarea>
-
-    <div id="checkAI" class="ai-box">
-
-      <div class="ai-title">
-        ✨ AI 建議補充
-      </div>
-
-      <div class="ai-text"></div>
-
-      <div class="ai-actions">
-
-        <button class="use-btn">
-          採用
-        </button>
-
-        <button class="retry-btn">
-          重新產生
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       CAUSE
-  ========================== -->
-
-  <section class="card">
-
-    <div class="section-head">
-
-      <div class="section-name">
-        ③ 原因
-      </div>
-
-      <button
-        class="ai-btn"
-        data-field="cause"
-      >
-        ✨ AI 建議
-      </button>
-
-    </div>
-
-    <label>
-      請填寫已確認或目前判斷的故障原因
-    </label>
-
-    <textarea
-      id="cause"
-      placeholder="例如：
-X軸線性滑軌潤滑不足。"
-    ></textarea>
-
-    <div id="causeAI" class="ai-box">
-
-      <div class="ai-title">
-        ✨ AI 建議
-      </div>
-
-      <div class="ai-text"></div>
-
-      <div class="ai-actions">
-
-        <button class="use-btn">
-          採用
-        </button>
-
-        <button class="retry-btn">
-          重新產生
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       ACTION
-  ========================== -->
-
-  <section class="card">
-
-    <div class="section-head">
-
-      <div class="section-name">
-        ④ 處置方法
-      </div>
-
-      <button
-        class="ai-btn"
-        data-field="action"
-      >
-        ✨ AI 整理
-      </button>
-
-    </div>
-
-    <label>
-      實際執行的維修、調整或更換內容
-    </label>
-
-    <textarea
-      id="action"
-      placeholder="例如：
-清潔X軸滑軌並補充潤滑油，完成試運轉。"
-    ></textarea>
-
-    <div id="actionAI" class="ai-box">
-
-      <div class="ai-title">
-        ✨ AI 建議
-      </div>
-
-      <div class="ai-text"></div>
-
-      <div class="ai-actions">
-
-        <button class="use-btn">
-          採用
-        </button>
-
-        <button class="retry-btn">
-          重新產生
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       AI REVIEW
-  ========================== -->
-
-  <section class="card">
-
-    <div class="card-title">
-      🧠 AI 維修單輔助
-    </div>
-
-    <button
-      id="reviewBtn"
-      class="big-ai"
-      disabled
-    >
-      🔍 AI 檢查維修單完整度
-    </button>
 
     <div
-      id="reviewResult"
-      class="result"
+      id="problemSuggestion"
+      class="ai-suggestion"
     >
 
-      <div class="result-title">
-        AI 檢查結果
+      <div class="ai-label">
+        ✨ AI 建議
       </div>
 
       <div
-        id="reviewText"
-        class="result-text"
+        id="problemSuggestionText"
+        class="ai-text"
       ></div>
 
-    </div>
+      <div class="ai-actions">
 
-    <br>
+        <button
+          type="button"
+          id="useProblemBtn"
+          class="btn btn-ok"
+        >
+          ✓ 採用
+        </button>
 
-    <button
-      id="summaryBtn"
-      class="big-ai"
-      disabled
-    >
-      ✨ AI 整理完整維修紀錄
-    </button>
+        <button
+          type="button"
+          id="ignoreProblemBtn"
+          class="btn btn-secondary"
+        >
+          忽略
+        </button>
 
-    <div
-      id="summaryResult"
-      class="result"
-    >
-
-      <div class="result-title">
-        AI 整理結果
       </div>
 
-      <div
-        id="summaryText"
-        class="result-text"
-      ></div>
-
     </div>
+
+    <div
+      id="problemAIStatus"
+      class="ai-status"
+    ></div>
 
   </section>
 
 
-  <!-- =========================
-       ACTIONS
-  ========================== -->
+  <!-- =====================
+       原因及處置
+  ====================== -->
 
-  <section class="card">
+  <section class="section">
 
-    <div class="actions">
+    <div class="section-title">
+
+      <h2>
+        ② 原因及處置方法
+      </h2>
+
+      <span>
+        手動填寫
+      </span>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        故障原因與處理方式
+        <span class="required">*</span>
+      </label>
+
+      <textarea
+        id="causeAction"
+        maxlength="1500"
+        placeholder="例如：
+檢查主軸軸承後發現異常，判斷軸承磨損，更換軸承後重新測試。"
+      ></textarea>
+
+      <div
+        class="counter"
+        id="causeCounter"
+      >
+        0 / 1500
+      </div>
+
+    </div>
+
+
+    <div class="ai-tools">
 
       <button
+        type="button"
+        id="analyzeCauseBtn"
+        class="btn btn-ai"
+        disabled
+      >
+        ✨ AI 建議寫法
+      </button>
+
+    </div>
+
+
+    <div
+      id="causeSuggestion"
+      class="ai-suggestion"
+    >
+
+      <div class="ai-label">
+        ✨ AI 建議
+      </div>
+
+      <div
+        id="causeSuggestionText"
+        class="ai-text"
+      ></div>
+
+      <div class="ai-actions">
+
+        <button
+          type="button"
+          id="useCauseBtn"
+          class="btn btn-ok"
+        >
+          ✓ 採用
+        </button>
+
+        <button
+          type="button"
+          id="ignoreCauseBtn"
+          class="btn btn-secondary"
+        >
+          忽略
+        </button>
+
+      </div>
+
+    </div>
+
+    <div
+      id="causeAIStatus"
+      class="ai-status"
+    ></div>
+
+  </section>
+
+
+  <!-- =====================
+       維修單預覽
+  ====================== -->
+
+  <section
+    id="previewSection"
+    class="section"
+  >
+
+    <div class="section-title">
+
+      <h2>
+        📝 維修單預覽
+      </h2>
+
+      <span>
+        可列印
+      </span>
+
+    </div>
+
+
+    <div class="bottom-actions">
+
+      <button
+        type="button"
+        id="previewBtn"
+        class="btn btn-primary"
+      >
+        產生維修單
+      </button>
+
+      <button
+        type="button"
         id="printBtn"
-        class="action-btn primary"
+        class="btn btn-secondary"
       >
-        🖨️ 列印 / PDF
+        🖨 列印 / PDF
       </button>
 
-      <button
-        id="clearBtn"
-        class="action-btn danger"
-      >
-        🗑️ 清空維修單
-      </button>
+    </div>
+
+
+    <div
+      id="preview"
+      class="preview"
+    >
+
+      <h1>
+        工具機維修單
+      </h1>
+
+      <table class="preview-table">
+
+        <tr>
+          <th>機台名稱</th>
+          <td id="pMachineName"></td>
+
+          <th>機台編號</th>
+          <td id="pMachineNo"></td>
+        </tr>
+
+        <tr>
+          <th>維修日期</th>
+          <td id="pRepairDate"></td>
+
+          <th>維修人員</th>
+          <td id="pRepairer"></td>
+        </tr>
+
+        <tr>
+          <th>問題及現象</th>
+
+          <td
+            colspan="3"
+            id="pProblem"
+          ></td>
+        </tr>
+
+        <tr>
+          <th>原因及處置方法</th>
+
+          <td
+            colspan="3"
+            id="pCauseAction"
+          ></td>
+        </tr>
+
+      </table>
+
+      <div class="preview-note">
+        本維修紀錄由現場人員填寫；AI 僅提供文字整理建議，
+        實際故障原因、檢查結果及處置內容應以現場確認結果為準。
+      </div>
 
     </div>
 
   </section>
 
 
-  <div class="footer">
-    本頁資料只存在目前瀏覽器頁面中，不建立維修歷史。
-    <br>
-    AI 建議需由維修人員確認後使用。
+  <div class="footer-note">
+    🔒 本頁面的 AI 推論在瀏覽器裝置端執行。<br>
+    本版本不建立維修歷史資料庫。
   </div>
 
 </main>
@@ -966,1051 +1194,1448 @@ X軸線性滑軌潤滑不足。"
 
 <script type="module">
 
-import {
-  CreateMLCEngine,
-  prebuiltAppConfig
-} from "https://esm.run/@mlc-ai/web-llm";
+  import {
+    CreateMLCEngine,
+    prebuiltAppConfig
+  } from
+    "https://esm.run/@mlc-ai/web-llm";
 
 
-/* =========================================================
-   DOM
-========================================================= */
+  /* =========================================================
+     DOM
+  ========================================================= */
 
-const modelSel =
-  document.getElementById("model");
+  const status =
+    document.getElementById("status");
 
-const loadBtn =
-  document.getElementById("loadBtn");
+  const modelSel =
+    document.getElementById("model");
 
-const status =
-  document.getElementById("status");
+  const loadBtn =
+    document.getElementById("loadBtn");
 
-const progress =
-  document.getElementById("progress");
+  const clearCacheBtn =
+    document.getElementById("clearCacheBtn");
 
-const bar =
-  document.getElementById("bar");
+  const progressBar =
+    document.getElementById("progressBar");
 
-const debug =
-  document.getElementById("debug");
+  const progressText =
+    document.getElementById("progressText");
 
-const reviewBtn =
-  document.getElementById("reviewBtn");
-
-const summaryBtn =
-  document.getElementById("summaryBtn");
+  const debugPanel =
+    document.getElementById("debug");
 
 
-/* =========================================================
-   ENGINE
-========================================================= */
+  const machineName =
+    document.getElementById("machineName");
 
-let engine = null;
-let busy = false;
+  const machineNo =
+    document.getElementById("machineNo");
+
+  const repairDate =
+    document.getElementById("repairDate");
+
+  const repairer =
+    document.getElementById("repairer");
 
 
-/* =========================================================
-   DEFAULT DATE
-========================================================= */
+  const problem =
+    document.getElementById("problem");
 
-function setDefaultDate() {
+  const causeAction =
+    document.getElementById("causeAction");
 
-  const el =
-    document.getElementById("date");
 
-  const now =
-    new Date();
+  const analyzeProblemBtn =
+    document.getElementById(
+      "analyzeProblemBtn"
+    );
 
-  const local =
-    new Date(
-      now.getTime()
-      - now.getTimezoneOffset() * 60000
-    )
+  const analyzeCauseBtn =
+    document.getElementById(
+      "analyzeCauseBtn"
+    );
+
+
+  const problemSuggestion =
+    document.getElementById(
+      "problemSuggestion"
+    );
+
+  const problemSuggestionText =
+    document.getElementById(
+      "problemSuggestionText"
+    );
+
+  const causeSuggestion =
+    document.getElementById(
+      "causeSuggestion"
+    );
+
+  const causeSuggestionText =
+    document.getElementById(
+      "causeSuggestionText"
+    );
+
+
+  const useProblemBtn =
+    document.getElementById(
+      "useProblemBtn"
+    );
+
+  const ignoreProblemBtn =
+    document.getElementById(
+      "ignoreProblemBtn"
+    );
+
+
+  const useCauseBtn =
+    document.getElementById(
+      "useCauseBtn"
+    );
+
+  const ignoreCauseBtn =
+    document.getElementById(
+      "ignoreCauseBtn"
+    );
+
+
+  const problemAIStatus =
+    document.getElementById(
+      "problemAIStatus"
+    );
+
+  const causeAIStatus =
+    document.getElementById(
+      "causeAIStatus"
+    );
+
+
+  const previewBtn =
+    document.getElementById(
+      "previewBtn"
+    );
+
+  const printBtn =
+    document.getElementById(
+      "printBtn"
+    );
+
+  const preview =
+    document.getElementById(
+      "preview"
+    );
+
+
+  /* =========================================================
+     State
+  ========================================================= */
+
+  let engine = null;
+
+  let busy = false;
+
+  let problemSuggestionValue = "";
+
+  let causeSuggestionValue = "";
+
+
+  let debug = {
+    startTime: 0,
+    lastProgressTime: 0,
+    lastProgress: 0,
+    lastText: "",
+    modelId: ""
+  };
+
+
+  /* =========================================================
+     日期
+  ========================================================= */
+
+  repairDate.value =
+    new Date()
       .toISOString()
-      .slice(0, 16);
+      .slice(0, 10);
 
-  el.value = local;
+
+  /* =========================================================
+     Status
+  ========================================================= */
+
+  function setStatus(
+    text,
+    cls = ""
+  ) {
+
+    status.textContent = text;
+
+    status.className =
+      "badge" +
+      (cls
+        ? " " + cls
+        : "");
+
+  }
+
+
+  /* =========================================================
+     Debug
+  ========================================================= */
+
+  function updateDebug(
+    extra = ""
+  ) {
+
+    const now =
+      Date.now();
+
+
+    const elapsed =
+      debug.startTime
+        ? (
+            (now -
+              debug.startTime) /
+            1000
+          ).toFixed(1)
+        : "0.0";
+
+
+    const idle =
+      debug.lastProgressTime
+        ? (
+            (now -
+              debug.lastProgressTime) /
+            1000
+          ).toFixed(1)
+        : "0.0";
+
+
+    debugPanel.textContent =
+`診斷資訊
+──────────────
+模型：${debug.modelId || "尚未選擇"}
+WebGPU：${
+  navigator.gpu
+    ? "✓ 支援"
+    : "✗ 不支援"
 }
+經過時間：${elapsed}s
+載入進度：${debug.lastProgress}%
+最後進度更新：${idle}s 前
+狀態：${debug.lastText || "等待…"}
+${extra ? "\n" + extra : ""}`;
 
-setDefaultDate();
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-function setStatus(text, cls) {
-
-  status.textContent = text;
-
-  status.className =
-    "badge" +
-    (cls ? " " + cls : "");
-}
+  }
 
 
-/* =========================================================
-   MODEL CHECK
-========================================================= */
+  /* =========================================================
+     Model check
+  ========================================================= */
 
-function checkModel(modelId) {
+  function checkModelExists(
+    modelId
+  ) {
 
-  return prebuiltAppConfig.model_list.find(
-    x => x.model_id === modelId
+    const found =
+      prebuiltAppConfig
+        .model_list
+        .find(
+          x =>
+            x.model_id ===
+            modelId
+        );
+
+
+    console.log(
+      "[WebLLM] model:",
+      modelId
+    );
+
+    console.log(
+      "[WebLLM] config:",
+      found
+    );
+
+
+    return found;
+  }
+
+
+  /* =========================================================
+     Enable AI buttons
+  ========================================================= */
+
+  function updateAIButtons() {
+
+    const hasProblem =
+      problem.value.trim()
+        .length > 0;
+
+
+    const hasCause =
+      causeAction.value.trim()
+        .length > 0;
+
+
+    analyzeProblemBtn.disabled =
+      !engine ||
+      !hasProblem ||
+      busy;
+
+
+    analyzeCauseBtn.disabled =
+      !engine ||
+      !hasCause ||
+      busy;
+
+  }
+
+
+  /* =========================================================
+     Counters
+  ========================================================= */
+
+  function updateCounters() {
+
+    document.getElementById(
+      "problemCounter"
+    ).textContent =
+      `${problem.value.length} / 1000`;
+
+
+    document.getElementById(
+      "causeCounter"
+    ).textContent =
+      `${causeAction.value.length} / 1500`;
+
+  }
+
+
+  problem.addEventListener(
+    "input",
+    () => {
+
+      updateCounters();
+
+      updateAIButtons();
+
+    }
   );
-}
 
 
-/* =========================================================
-   LOAD MODEL
-========================================================= */
+  causeAction.addEventListener(
+    "input",
+    () => {
 
-async function loadModel() {
+      updateCounters();
 
-  if (!navigator.gpu) {
+      updateAIButtons();
+
+    }
+  );
+
+
+  updateCounters();
+
+
+  /* =========================================================
+     Clear Cache
+  ========================================================= */
+
+  clearCacheBtn.addEventListener(
+    "click",
+    async () => {
+
+      const ok =
+        confirm(
+          "確定要清除 WebLLM 模型快取嗎？\n\n" +
+          "清除後下次需要重新下載模型。"
+        );
+
+
+      if (!ok) {
+        return;
+      }
+
+
+      try {
+
+        const keys =
+          await caches.keys();
+
+
+        let removed = 0;
+
+
+        for (
+          const key of keys
+        ) {
+
+          const lower =
+            key.toLowerCase();
+
+
+          if (
+            lower.includes(
+              "webllm"
+            ) ||
+            lower.includes(
+              "mlc"
+            )
+          ) {
+
+            await caches.delete(
+              key
+            );
+
+            removed++;
+
+          }
+
+        }
+
+
+        alert(
+          `完成。\n\n` +
+          `清除了 ${removed} 個 Cache。`
+        );
+
+
+      } catch (err) {
+
+        console.error(
+          err
+        );
+
+
+        alert(
+          "清除快取失敗：\n\n" +
+          (
+            err?.message ||
+            String(err)
+          )
+        );
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     Load model
+  ========================================================= */
+
+  async function loadModel() {
+
+    if (
+      !navigator.gpu
+    ) {
+
+      setStatus(
+        "無 WebGPU",
+        "err"
+      );
+
+
+      progressText.textContent =
+        "此瀏覽器沒有 WebGPU，無法執行 WebLLM。";
+
+
+      return;
+    }
+
+
+    const modelId =
+      modelSel.value;
+
+
+    debug = {
+
+      startTime:
+        Date.now(),
+
+      lastProgressTime:
+        Date.now(),
+
+      lastProgress:
+        0,
+
+      lastText:
+        "開始初始化…",
+
+      modelId
+
+    };
+
+
+    updateDebug();
+
+
+    const modelInfo =
+      checkModelExists(
+        modelId
+      );
+
+
+    if (!modelInfo) {
+
+      setStatus(
+        "模型不存在",
+        "err"
+      );
+
+
+      progressText.textContent =
+        "目前 WebLLM 版本找不到此模型。";
+
+
+      return;
+    }
+
+
+    loadBtn.disabled =
+      true;
+
+    modelSel.disabled =
+      true;
+
+
+    setStatus(
+      "載入中…",
+      "warn"
+    );
+
+
+    progressText.textContent =
+      "開始下載 / 初始化模型…";
+
+
+    progressBar.style.width =
+      "0%";
+
+
+    let watchdog =
+      setInterval(
+        () => {
+
+          const idle =
+            (
+              Date.now() -
+              debug.lastProgressTime
+            ) / 1000;
+
+
+          if (
+            idle >= 20 &&
+            !engine
+          ) {
+
+            debug.lastText =
+              `⚠️ ${idle.toFixed(0)} 秒沒有新的載入進度`;
+
+
+            updateDebug(
+              "可能原因：\n" +
+              "• 網路速度慢\n" +
+              "• CDN / Hugging Face 連線問題\n" +
+              "• 瀏覽器 Cache\n" +
+              "• WebGPU 初始化\n" +
+              "• 手機記憶體不足"
+            );
+
+
+            progressText.textContent =
+              "⚠️ 超過 20 秒沒有新的進度。請稍候，不要關閉頁面。";
+
+          }
+          else {
+
+            updateDebug();
+
+          }
+
+        },
+        1000
+      );
+
+
+    try {
+
+      engine =
+        await CreateMLCEngine(
+          modelId,
+          {
+
+            initProgressCallback:
+              (r) => {
+
+                console.log(
+                  "[WebLLM progress]",
+                  r
+                );
+
+
+                debug.lastProgressTime =
+                  Date.now();
+
+
+                if (
+                  typeof r.progress ===
+                  "number"
+                ) {
+
+                  debug.lastProgress =
+                    Math.round(
+                      r.progress * 100
+                    );
+
+                }
+
+
+                debug.lastText =
+                  r.text ||
+                  "載入中…";
+
+
+                progressText.textContent =
+                  r.text ||
+                  "載入中…";
+
+
+                if (
+                  typeof r.progress ===
+                  "number"
+                ) {
+
+                  progressBar.style.width =
+                    (
+                      r.progress * 100
+                    ) + "%";
+
+                }
+
+
+                updateDebug();
+
+              }
+
+          }
+        );
+
+
+      clearInterval(
+        watchdog
+      );
+
+
+      progressBar.style.width =
+        "100%";
+
+
+      progressText.textContent =
+        "模型已就緒，可以開始填寫維修單。";
+
+
+      debug.lastProgress =
+        100;
+
+
+      debug.lastText =
+        "模型就緒";
+
+
+      updateDebug(
+        "✓ WebLLM Engine 建立成功"
+      );
+
+
+      setStatus(
+        "AI 已就緒",
+        "ok"
+      );
+
+
+      loadBtn.textContent =
+        "模型已載入";
+
+
+      updateAIButtons();
+
+
+    } catch (err) {
+
+      clearInterval(
+        watchdog
+      );
+
+
+      console.error(
+        "[WebLLM ERROR]",
+        err
+      );
+
+
+      engine =
+        null;
+
+
+      const message =
+        err?.message ||
+        String(err);
+
+
+      progressText.textContent =
+        "❌ 模型載入失敗：\n" +
+        message;
+
+
+      debug.lastText =
+        "載入失敗";
+
+
+      updateDebug(
+        "錯誤：\n" +
+        message
+      );
+
+
+      setStatus(
+        "載入失敗",
+        "err"
+      );
+
+
+      loadBtn.disabled =
+        false;
+
+
+      modelSel.disabled =
+        false;
+
+
+      updateAIButtons();
+
+    }
+
+  }
+
+
+  /* =========================================================
+     AI Prompt
+  ========================================================= */
+
+  function buildProblemPrompt(
+    original
+  ) {
+
+    return `
+你是工具機維修紀錄文字整理助手。
+
+請把維修人員提供的「問題及現象」整理成專業、客觀、適合寫入維修單的繁體中文。
+
+重要規則：
+1. 只能整理使用者提供的事實。
+2. 不可以自行增加不存在的故障原因。
+3. 不可以自行增加數值、尺寸、溫度、電流、壓力、時間等資料。
+4. 不可以把「可能」寫成「已確認」。
+5. 不可以自行判定零件已損壞。
+6. 保留原本的意思。
+7. 不要加入「建議」、「可能原因」等分析。
+8. 只輸出整理後的一段文字。
+9. 使用台灣常見的繁體中文維修用語。
+10. 內容簡潔。
+
+原始內容：
+${original}
+`.trim();
+
+  }
+
+
+  function buildCausePrompt(
+    original
+  ) {
+
+    return `
+你是工具機維修紀錄文字整理助手。
+
+請把維修人員提供的「原因及處置方法」整理成專業、客觀、適合寫入維修單的繁體中文。
+
+重要規則：
+1. 只能整理使用者提供的事實。
+2. 不可以自行增加沒有提供的檢查結果。
+3. 不可以自行增加零件名稱、數值或測試結果。
+4. 不可以把推測寫成確定原因。
+5. 如果原文使用「可能」、「疑似」、「初步判斷」，必須保留這種不確定性。
+6. 不要創造不存在的維修步驟。
+7. 不要增加安全認證或測試通過等內容。
+8. 只輸出整理後的一段文字。
+9. 使用台灣工具機維修常見用語。
+10. 內容簡潔。
+
+原始內容：
+${original}
+`.trim();
+
+  }
+
+
+  /* =========================================================
+     AI request
+  ========================================================= */
+
+  async function runAI(
+    prompt
+  ) {
+
+    if (
+      !engine
+    ) {
+
+      throw new Error(
+        "AI 模型尚未載入。"
+      );
+
+    }
+
+
+    /*
+      保留你原本穩定版本的：
+      stream: true
+      max_tokens: 512
+    */
+
+    const stream =
+      await engine
+        .chat
+        .completions
+        .create({
+
+          messages: [
+
+            {
+              role: "system",
+
+              content:
+                "你是專業的工具機維修紀錄文字整理助手。"
+            },
+
+            {
+              role: "user",
+
+              content:
+                prompt
+            }
+
+          ],
+
+          stream:
+            true,
+
+          temperature:
+            0.2,
+
+          max_tokens:
+            512
+
+        });
+
+
+    let full =
+      "";
+
+
+    for await (
+      const chunk of stream
+    ) {
+
+      const delta =
+        chunk
+          ?.choices?.[0]
+          ?.delta
+          ?.content ||
+        "";
+
+
+      full += delta;
+
+    }
+
+
+    return full.trim();
+
+  }
+
+
+  /* =========================================================
+     Problem AI
+  ========================================================= */
+
+  analyzeProblemBtn.addEventListener(
+    "click",
+    async () => {
+
+      if (
+        busy ||
+        !engine
+      ) {
+        return;
+      }
+
+
+      const original =
+        problem.value.trim();
+
+
+      if (!original) {
+
+        return;
+
+      }
+
+
+      busy =
+        true;
+
+
+      updateAIButtons();
+
+
+      problemAIStatus.textContent =
+        "🤖 分析中…";
+
+
+      problemSuggestion.classList.remove(
+        "show"
+      );
+
+
+      try {
+
+        problemSuggestionValue =
+          await runAI(
+            buildProblemPrompt(
+              original
+            )
+          );
+
+
+        if (
+          !problemSuggestionValue
+        ) {
+
+          throw new Error(
+            "AI 沒有產生內容。"
+          );
+
+        }
+
+
+        problemSuggestionText.textContent =
+          problemSuggestionValue;
+
+
+        problemSuggestion.classList.add(
+          "show"
+        );
+
+
+        problemAIStatus.textContent =
+          "AI 已完成建議。請確認內容後再決定是否採用。";
+
+
+      } catch (err) {
+
+        console.error(
+          "[Problem AI]",
+          err
+        );
+
+
+        problemAIStatus.textContent =
+          "❌ AI 分析失敗：" +
+          (
+            err?.message ||
+            String(err)
+          );
+
+      } finally {
+
+        busy =
+          false;
+
+
+        updateAIButtons();
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     Cause AI
+  ========================================================= */
+
+  analyzeCauseBtn.addEventListener(
+    "click",
+    async () => {
+
+      if (
+        busy ||
+        !engine
+      ) {
+        return;
+      }
+
+
+      const original =
+        causeAction.value.trim();
+
+
+      if (!original) {
+
+        return;
+
+      }
+
+
+      busy =
+        true;
+
+
+      updateAIButtons();
+
+
+      causeAIStatus.textContent =
+        "🤖 分析中…";
+
+
+      causeSuggestion.classList.remove(
+        "show"
+      );
+
+
+      try {
+
+        causeSuggestionValue =
+          await runAI(
+            buildCausePrompt(
+              original
+            )
+          );
+
+
+        if (
+          !causeSuggestionValue
+        ) {
+
+          throw new Error(
+            "AI 沒有產生內容。"
+          );
+
+        }
+
+
+        causeSuggestionText.textContent =
+          causeSuggestionValue;
+
+
+        causeSuggestion.classList.add(
+          "show"
+        );
+
+
+        causeAIStatus.textContent =
+          "AI 已完成建議。請確認內容後再決定是否採用。";
+
+
+      } catch (err) {
+
+        console.error(
+          "[Cause AI]",
+          err
+        );
+
+
+        causeAIStatus.textContent =
+          "❌ AI 分析失敗：" +
+          (
+            err?.message ||
+            String(err)
+          );
+
+      } finally {
+
+        busy =
+          false;
+
+
+        updateAIButtons();
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     Use / Ignore Problem
+  ========================================================= */
+
+  useProblemBtn.addEventListener(
+    "click",
+    () => {
+
+      if (
+        problemSuggestionValue
+      ) {
+
+        problem.value =
+          problemSuggestionValue;
+
+        updateCounters();
+
+      }
+
+
+      problemSuggestion.classList.remove(
+        "show"
+      );
+
+
+      problemAIStatus.textContent =
+        "✓ 已採用 AI 建議。";
+
+
+      updateAIButtons();
+
+    }
+  );
+
+
+  ignoreProblemBtn.addEventListener(
+    "click",
+    () => {
+
+      problemSuggestion.classList.remove(
+        "show"
+      );
+
+
+      problemAIStatus.textContent =
+        "已忽略 AI 建議。";
+
+    }
+  );
+
+
+  /* =========================================================
+     Use / Ignore Cause
+  ========================================================= */
+
+  useCauseBtn.addEventListener(
+    "click",
+    () => {
+
+      if (
+        causeSuggestionValue
+      ) {
+
+        causeAction.value =
+          causeSuggestionValue;
+
+        updateCounters();
+
+      }
+
+
+      causeSuggestion.classList.remove(
+        "show"
+      );
+
+
+      causeAIStatus.textContent =
+        "✓ 已採用 AI 建議。";
+
+
+      updateAIButtons();
+
+    }
+  );
+
+
+  ignoreCauseBtn.addEventListener(
+    "click",
+    () => {
+
+      causeSuggestion.classList.remove(
+        "show"
+      );
+
+
+      causeAIStatus.textContent =
+        "已忽略 AI 建議。";
+
+    }
+  );
+
+
+  /* =========================================================
+     Preview
+  ========================================================= */
+
+  function escapeHTML(
+    value
+  ) {
+
+    return String(
+      value || ""
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  function textToHTML(
+    value
+  ) {
+
+    return escapeHTML(
+      value
+    ).replace(
+      /\n/g,
+      "<br>"
+    );
+
+  }
+
+
+  function createPreview() {
+
+    document.getElementById(
+      "pMachineName"
+    ).textContent =
+      machineName.value.trim();
+
+
+    document.getElementById(
+      "pMachineNo"
+    ).textContent =
+      machineNo.value.trim();
+
+
+    document.getElementById(
+      "pRepairDate"
+    ).textContent =
+      repairDate.value;
+
+
+    document.getElementById(
+      "pRepairer"
+    ).textContent =
+      repairer.value.trim();
+
+
+    document.getElementById(
+      "pProblem"
+    ).innerHTML =
+      textToHTML(
+        problem.value.trim()
+      );
+
+
+    document.getElementById(
+      "pCauseAction"
+    ).innerHTML =
+      textToHTML(
+        causeAction.value.trim()
+      );
+
+
+    preview.classList.add(
+      "show"
+    );
+
+
+    preview.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }
+
+
+  previewBtn.addEventListener(
+    "click",
+    () => {
+
+      if (
+        !problem.value.trim()
+      ) {
+
+        alert(
+          "請先填寫「問題及現象」。"
+        );
+
+        problem.focus();
+
+        return;
+      }
+
+
+      if (
+        !causeAction.value.trim()
+      ) {
+
+        alert(
+          "請先填寫「原因及處置方法」。"
+        );
+
+        causeAction.focus();
+
+        return;
+      }
+
+
+      createPreview();
+
+    }
+  );
+
+
+  /* =========================================================
+     Print
+  ========================================================= */
+
+  printBtn.addEventListener(
+    "click",
+    () => {
+
+      if (
+        !preview.classList.contains(
+          "show"
+        )
+      ) {
+
+        createPreview();
+
+      }
+
+
+      setTimeout(
+        () => {
+
+          window.print();
+
+        },
+        200
+      );
+
+    }
+  );
+
+
+  /* =========================================================
+     Initial WebGPU
+  ========================================================= */
+
+  if (
+    !navigator.gpu
+  ) {
 
     setStatus(
       "無 WebGPU",
       "err"
     );
 
-    progress.textContent =
-      "此瀏覽器沒有 WebGPU，無法執行 WebLLM。";
 
-    debug.textContent =
+    progressText.textContent =
+      "目前瀏覽器沒有 WebGPU。請使用支援 WebGPU 的瀏覽器。";
+
+
+    debugPanel.textContent =
       "WebGPU：✗ 不支援";
 
-    return;
-  }
-
-
-  const modelId =
-    modelSel.value;
-
-  const modelInfo =
-    checkModel(modelId);
-
-
-  if (!modelInfo) {
-
-    setStatus(
-      "模型不存在",
-      "err"
-    );
-
-    progress.textContent =
-      "目前 WebLLM 版本找不到此模型。";
-
-    return;
-  }
-
-
-  loadBtn.disabled = true;
-  modelSel.disabled = true;
-
-  setStatus(
-    "載入中…",
-    "warn"
-  );
-
-  progress.textContent =
-    "開始初始化模型…";
-
-  bar.style.width =
-    "0%";
-
-
-  let lastTime =
-    Date.now();
-
-
-  const watchdog =
-    setInterval(() => {
-
-      const idle =
-        (Date.now() - lastTime) / 1000;
-
-      debug.textContent =
-`模型：${modelId}
-WebGPU：✓ 支援
-最後進度：${idle.toFixed(1)} 秒前`;
-
-      if (idle > 20 && !engine) {
-
-        progress.textContent =
-          "⚠️ 超過 20 秒沒有進度，可能正在下載或初始化。";
-
-      }
-
-    }, 1000);
-
-
-  try {
-
-    engine =
-      await CreateMLCEngine(
-        modelId,
-        {
-
-          initProgressCallback: r => {
-
-            lastTime =
-              Date.now();
-
-            if (
-              typeof r.progress === "number"
-            ) {
-
-              const percent =
-                Math.round(
-                  r.progress * 100
-                );
-
-              bar.style.width =
-                percent + "%";
-            }
-
-            progress.textContent =
-              r.text ||
-              "模型載入中…";
-
-            debug.textContent =
-`模型：${modelId}
-WebGPU：✓ 支援
-進度：${
-  typeof r.progress === "number"
-    ? Math.round(r.progress * 100) + "%"
-    : "未知"
-}
-${r.text || ""}`;
-
-          }
-
-        }
-      );
-
-
-    clearInterval(watchdog);
-
-    bar.style.width =
-      "100%";
-
-    progress.textContent =
-      "模型已就緒。";
-
-    debug.textContent =
-      "WebGPU：✓ 支援\n模型：✓ 已載入";
-
-    setStatus(
-      "AI 已就緒",
-      "ok"
-    );
-
-
-    reviewBtn.disabled =
-      false;
-
-    summaryBtn.disabled =
-      false;
-
-    loadBtn.textContent =
-      "已載入";
-
-
-  } catch (err) {
-
-    clearInterval(watchdog);
-
-    console.error(err);
-
-    engine =
-      null;
-
-    setStatus(
-      "載入失敗",
-      "err"
-    );
-
-    progress.textContent =
-      "❌ 載入失敗：\n" +
-      (err?.message || String(err));
-
-    debug.textContent =
-      "錯誤：\n" +
-      (err?.stack || err);
-
     loadBtn.disabled =
-      false;
-
-    modelSel.disabled =
-      false;
-
-  }
-
-}
-
-
-/* =========================================================
-   GET FORM DATA
-========================================================= */
-
-function getForm() {
-
-  return {
-
-    machineId:
-      document.getElementById(
-        "machineId"
-      ).value.trim(),
-
-    machineName:
-      document.getElementById(
-        "machineName"
-      ).value.trim(),
-
-    technician:
-      document.getElementById(
-        "technician"
-      ).value.trim(),
-
-    date:
-      document.getElementById(
-        "date"
-      ).value,
-
-    problem:
-      document.getElementById(
-        "problem"
-      ).value.trim(),
-
-    check:
-      document.getElementById(
-        "check"
-      ).value.trim(),
-
-    cause:
-      document.getElementById(
-        "cause"
-      ).value.trim(),
-
-    action:
-      document.getElementById(
-        "action"
-      ).value.trim()
-
-  };
-}
-
-
-/* =========================================================
-   AI CALL
-========================================================= */
-
-async function askAI(
-  system,
-  user
-) {
-
-  if (!engine) {
-
-    throw new Error(
-      "請先載入 AI 模型。"
-    );
-
-  }
-
-
-  const result =
-    await engine.chat.completions.create({
-
-      messages: [
-
-        {
-          role: "system",
-          content: system
-        },
-
-        {
-          role: "user",
-          content: user
-        }
-
-      ],
-
-      temperature: 0.3,
-
-      max_tokens: 150
-
-    });
-
-
-  return (
-    result
-      .choices?.[0]
-      ?.message
-      ?.content
-      ?.trim()
-    || ""
-  );
-}
-
-
-/* =========================================================
-   FIELD PROMPTS
-========================================================= */
-
-function buildPrompt(
-  field,
-  data
-) {
-
-  const common =
-`你是「工具機維修紀錄文字助手」。
-
-你的任務是協助維修人員把現場手寫內容整理成清楚、專業、客觀的繁體中文維修紀錄。
-
-重要規則：
-1. 不可以捏造沒有提供的檢查結果。
-2. 不可以把「可能、懷疑、推測」改成「已確認」。
-3. 不可以自行宣稱零件損壞。
-4. 不可以自行增加維修人員沒有做過的維修。
-5. 如果資訊不足，請明確指出資訊不足。
-6. 使用台灣工廠常見的繁體中文。
-7. 儘量簡潔。
-8. 只輸出建議內容，不要加多餘解釋。`;
-
-
-  if (field === "problem") {
-
-    return common +
-
-`
-請將「問題及現象」整理成適合工具機維修單的描述。
-
-原始描述：
-${data.problem}
-
-如果內容太簡短，請不要自行編造，只能用目前提供的資訊改善文字。
-`;
-
-  }
-
-
-  if (field === "check") {
-
-    return common +
-
-`
-目前的問題及現象：
-${data.problem || "未填寫"}
-
-目前檢查結果：
-${data.check}
-
-請協助整理「檢查結果」。
-如果目前資訊不足，請提出最多3個建議確認項目，而不是假設檢查已完成。
-`;
-
-  }
-
-
-  if (field === "cause") {
-
-    return common +
-
-`
-問題及現象：
-${data.problem || "未填寫"}
-
-檢查結果：
-${data.check || "未填寫"}
-
-目前填寫的原因：
-${data.cause}
-
-請協助把原因整理成專業維修紀錄。
-
-如果檢查結果不足以支持這個原因，
-請使用「疑似」、「可能」等字眼，
-不要寫成已確認故障。
-`;
-
-  }
-
-
-  if (field === "action") {
-
-    return common +
-
-`
-問題及現象：
-${data.problem || "未填寫"}
-
-檢查結果：
-${data.check || "未填寫"}
-
-原因：
-${data.cause || "未填寫"}
-
-目前處置方法：
-${data.action}
-
-請將實際處置內容整理成正式維修紀錄。
-不得增加未提供的維修工作。
-`;
-
-  }
-
-}
-
-
-/* =========================================================
-   AI FIELD BUTTON
-========================================================= */
-
-async function fieldAI(
-  field
-) {
-
-  if (busy)
-    return;
-
-
-  if (!engine) {
-
-    alert(
-      "請先載入 AI 模型。"
-    );
-
-    return;
-  }
-
-
-  const data =
-    getForm();
-
-
-  const input =
-    data[field];
-
-
-  if (!input) {
-
-    alert(
-      "請先手動填寫此欄位，再使用 AI 輔助。"
-    );
-
-    return;
-  }
-
-
-  busy = true;
-
-
-  const box =
-    document.getElementById(
-      field + "AI"
-    );
-
-  const textEl =
-    box.querySelector(
-      ".ai-text"
-    );
-
-
-  box.classList.add("show");
-
-  textEl.textContent =
-    "AI 分析中…";
-
-
-  try {
-
-    const answer =
-      await askAI(
-        buildPrompt(
-          field,
-          data
-        ),
-        input
-      );
-
-
-    textEl.textContent =
-      answer ||
-      "AI 沒有產生建議。";
-
-
-    box.dataset.value =
-      answer;
-
-
-  } catch (err) {
-
-    textEl.textContent =
-      "錯誤：" +
-      (err.message || err);
-
-  } finally {
-
-    busy = false;
-
-  }
-
-}
-
-
-/* =========================================================
-   FIELD BUTTONS
-========================================================= */
-
-document
-  .querySelectorAll(".ai-btn")
-  .forEach(btn => {
-
-    btn.addEventListener(
-      "click",
-      () => {
-
-        fieldAI(
-          btn.dataset.field
-        );
-
-      }
-    );
-
-  });
-
-
-/* =========================================================
-   USE AI RESULT
-========================================================= */
-
-document
-  .querySelectorAll(".ai-box")
-  .forEach(box => {
-
-    const use =
-      box.querySelector(
-        ".use-btn"
-      );
-
-    const retry =
-      box.querySelector(
-        ".retry-btn"
-      );
-
-
-    use.addEventListener(
-      "click",
-      () => {
-
-        const field =
-          box.id.replace(
-            "AI",
-            ""
-          );
-
-        const value =
-          box.dataset.value || "";
-
-
-        if (value) {
-
-          document.getElementById(
-            field
-          ).value = value;
-
-          box.classList.remove(
-            "show"
-          );
-
-        }
-
-      }
-    );
-
-
-    retry.addEventListener(
-      "click",
-      () => {
-
-        const field =
-          box.id.replace(
-            "AI",
-            ""
-          );
-
-        fieldAI(field);
-
-      }
-    );
-
-  });
-
-
-/* =========================================================
-   AI REVIEW
-========================================================= */
-
-reviewBtn.addEventListener(
-  "click",
-  async () => {
-
-    if (busy)
-      return;
-
-
-    const data =
-      getForm();
-
-
-    busy = true;
-
-    reviewBtn.disabled =
       true;
 
-    reviewBtn.textContent =
-      "🔄 AI 檢查中…";
+  }
+  else {
 
-
-    const result =
-      document.getElementById(
-        "reviewResult"
-      );
-
-    const text =
-      document.getElementById(
-        "reviewText"
-      );
-
-
-    result.classList.add(
-      "show"
+    setStatus(
+      "等待載入",
+      "warn"
     );
 
-    text.textContent =
-      "分析中…";
+
+    debug.lastText =
+      "WebGPU ✓ 可用";
 
 
-    const prompt =
-`請檢查以下工具機維修單的完整度。
-
-請只從「紀錄完整性」角度檢查，不要自行判定故障。
-
-請分成：
-【已具備】
-【可能需要補充】
-【注意事項】
-
-特別注意：
-- 問題及現象是否具體
-- 檢查結果是否有實際依據
-- 原因是否有檢查結果支持
-- 處置方法是否描述實際做過的事情
-- 是否存在「猜測被寫成確認」的情況
-
-資料：
-
-機台：
-${data.machineId} ${data.machineName}
-
-問題及現象：
-${data.problem || "未填寫"}
-
-檢查結果：
-${data.check || "未填寫"}
-
-原因：
-${data.cause || "未填寫"}
-
-處置方法：
-${data.action || "未填寫"}
-`;
-
-
-    try {
-
-      const answer =
-        await askAI(
-          "你是工具機維修紀錄品質檢查助手，使用繁體中文，客觀指出缺漏，不捏造資訊。",
-          prompt
-        );
-
-
-      text.textContent =
-        answer;
-
-    } catch (err) {
-
-      text.textContent =
-        "錯誤：" +
-        (err.message || err);
-
-    } finally {
-
-      busy = false;
-
-      reviewBtn.disabled =
-        false;
-
-      reviewBtn.textContent =
-        "🔍 AI 檢查維修單完整度";
-
-    }
+    updateDebug();
 
   }
-);
 
 
-/* =========================================================
-   AI SUMMARY
-========================================================= */
+  /* =========================================================
+     Prevent accidental page navigation from Enter
+  ========================================================= */
 
-summaryBtn.addEventListener(
-  "click",
-  async () => {
+  document.addEventListener(
+    "keydown",
+    (e) => {
 
-    if (busy)
-      return;
+      if (
+        e.key === "Enter" &&
+        e.target.tagName === "INPUT"
+      ) {
 
+        e.preventDefault();
 
-    const data =
-      getForm();
-
-
-    if (
-      !data.problem &&
-      !data.check &&
-      !data.cause &&
-      !data.action
-    ) {
-
-      alert(
-        "請先填寫維修內容。"
-      );
-
-      return;
-    }
-
-
-    busy = true;
-
-    summaryBtn.disabled =
-      true;
-
-    summaryBtn.textContent =
-      "🔄 AI 整理中…";
-
-
-    const result =
-      document.getElementById(
-        "summaryResult"
-      );
-
-    const text =
-      document.getElementById(
-        "summaryText"
-      );
-
-
-    result.classList.add(
-      "show"
-    );
-
-    text.textContent =
-      "整理中…";
-
-
-    const prompt =
-`請將以下工具機維修資料整理成正式的維修紀錄。
-
-格式：
-
-【問題及現象】
-...
-
-【檢查結果】
-...
-
-【原因】
-...
-
-【處置方法】
-...
-
-規則：
-1. 不得增加沒有提供的事實。
-2. 不得虛構測試結果。
-3. 不得把「可能」改成「確認」。
-4. 保留實際維修內容。
-5. 使用簡潔、專業的繁體中文。
-
-問題及現象：
-${data.problem || "未填寫"}
-
-檢查結果：
-${data.check || "未填寫"}
-
-原因：
-${data.cause || "未填寫"}
-
-處置方法：
-${data.action || "未填寫"}
-`;
-
-
-    try {
-
-      const answer =
-        await askAI(
-          "你是工具機維修報告整理助手。",
-          prompt
-        );
-
-
-      text.textContent =
-        answer;
-
-    } catch (err) {
-
-      text.textContent =
-        "錯誤：" +
-        (err.message || err);
-
-    } finally {
-
-      busy = false;
-
-      summaryBtn.disabled =
-        false;
-
-      summaryBtn.textContent =
-        "✨ AI 整理完整維修紀錄";
+      }
 
     }
-
-  }
-);
+  );
 
 
-/* =========================================================
-   CLEAR FORM
-========================================================= */
+  /* =========================================================
+     Load button
+  ========================================================= */
 
-document
-  .getElementById("clearBtn")
-  .addEventListener(
+  loadBtn.addEventListener(
     "click",
-    () => {
-
-      const ok =
-        confirm(
-          "確定清空目前維修單？\n\n目前頁面中的內容會全部清除。"
-        );
-
-      if (!ok)
-        return;
-
-
-      document
-        .querySelectorAll(
-          "input, textarea"
-        )
-        .forEach(el => {
-
-          if (
-            el.type !== "button" &&
-            el.type !== "submit"
-          ) {
-
-            el.value = "";
-
-          }
-
-        });
-
-
-      document
-        .querySelectorAll(
-          ".ai-box, .result"
-        )
-        .forEach(el => {
-
-          el.classList.remove(
-            "show"
-          );
-
-        });
-
-
-      setDefaultDate();
-
-    }
+    loadModel
   );
 
 
-/* =========================================================
-   PRINT
-========================================================= */
+  /* =========================================================
+     Initial
+  ========================================================= */
 
-document
-  .getElementById("printBtn")
-  .addEventListener(
-    "click",
-    () => {
-
-      window.print();
-
-    }
-  );
-
-
-/* =========================================================
-   LOAD
-========================================================= */
-
-loadBtn.addEventListener(
-  "click",
-  loadModel
-);
-
-
-/* =========================================================
-   INITIAL WEBGPU CHECK
-========================================================= */
-
-if (
-  !navigator.gpu
-) {
-
-  setStatus(
-    "無 WebGPU",
-    "err"
-  );
-
-  progress.textContent =
-    "此瀏覽器不支援 WebGPU。";
-
-  debug.textContent =
-    "WebGPU：✗ 不支援\n\n" +
-    "請使用支援 WebGPU 的新版 Chrome / Edge / Safari。";
-
-  loadBtn.disabled =
-    true;
-
-} else {
-
-  setStatus(
-    "等待 AI",
-    "warn"
-  );
-
-  debug.textContent =
-    "WebGPU：✓ 支援\n" +
-    "等待載入模型。";
-
-}
+  updateAIButtons();
 
 </script>
 
