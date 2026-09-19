@@ -1288,170 +1288,124 @@
 
     async function loadModel() {
 
-      if (state.loading) {
-        return;
-      }
+  if (state.loading) {
+    return;
+  }
 
-      if (!checkWebGPU()) {
-        return;
-      }
+  if (!checkWebGPU()) {
+    return;
+  }
 
-      const modelId =
-        modelSelect.value;
+  const modelId = modelSelect.value;
 
-      state.loading = true;
+  state.loading = true;
 
-      loadBtn.disabled = true;
-      modelSelect.disabled = true;
-      clearCacheBtn.disabled = true;
+  loadBtn.disabled = true;
+  modelSelect.disabled = true;
+  clearCacheBtn.disabled = true;
 
-      updateAIButtons();
+  updateAIButtons();
 
-      setStatus(
-        "正在載入 AI 模型...",
-        "loading"
-      );
+  setStatus("正在載入 AI 模型...", "loading");
+  setProgress(0, "準備載入模型...");
+  resetDebug("開始載入模型：\n" + modelId);
 
-      setProgress(
-        0,
-        "準備載入模型..."
-      );
+  showOverlay(
+    "正在載入 AI 模型",
+    "第一次載入模型時可能需要較長時間，請不要關閉頁面。"
+  );
 
-      resetDebug(
-        "開始載入模型：\n" +
-        modelId
-      );
+  try {
 
-      showOverlay(
-        "正在載入 AI 模型",
-        "第一次載入模型時可能需要較長時間，請不要關閉頁面。"
-      );
+    const modelInfo = prebuiltAppConfig.model_list.find(
+      item => item.model_id === modelId
+    );
 
-      try {
-
-        const modelInfo =
-          prebuiltAppConfig.model_list.find(
-            item =>
-              item.model_id === modelId
-          );
-
-
-        if (!modelInfo) {
-
-          throw new Error(
-            "找不到模型設定：" + modelId
-          );
-        }
-
-
-        debug(
-          "\n模型名稱：" +
-          modelId
-        );
-
-
-        if (modelInfo.vram_required_MB) {
-
-          debug(
-            "\n預估 VRAM：" +
-            modelInfo.vram_required_MB +
-            " MB"
-          );
-        }
-
-
-        state.engine =
-          await CreateMLCEngine(
-            modelId,
-            {
-
-              initProgressCallback:
-                progress => {
-
-                  let percent = 0;
-
-                  if (
-                    typeof progress.progress ===
-                    "number"
-                  ) {
-
-                    percent =
-                      progress.progress * 100;
-
-                  }
-
-                  const text =
-                    progress.text ||
-                    "載入中...";
-
-                  setProgress(
-                    percent,
-                    text
-                  );
-
-                }
-
-            }
-          );
-
-
-        setProgress(
-          100,
-          "AI 模型已完成載入"
-        );
-
-        setStatus(
-          "AI 已就緒，可以開始分析",
-          "ready"
-        );
-
-        debug(
-          "\n\n模型載入完成。"
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-        state.engine = null;
-
-        setStatus(
-          "AI 模型載入失敗",
-          "error"
-        );
-
-        setProgress(
-          0,
-          "載入失敗"
-        );
-
-        debug(
-          "\n\n載入錯誤：\n" +
-          (error?.stack ||
-            error?.message ||
-            String(error))
-        );
-
-        alert(
-          "AI 模型載入失敗。\n\n" +
-          (error?.message ||
-            String(error)) +
-          "\n\n請確認瀏覽器支援 WebGPU，或嘗試重新整理頁面。"
-        );
-
-      } finally {
-
-        state.loading = false;
-
-        loadBtn.disabled = false;
-        modelSelect.disabled = false;
-        clearCacheBtn.disabled = false;
-
-        updateAIButtons();
-
-        hideOverlay();
-      }
+    if (!modelInfo) {
+      throw new Error("找不到模型設定：" + modelId);
     }
+
+    debug("\n模型名稱：" + modelId);
+
+    if (modelInfo.vram_required_MB) {
+      debug("\n預估 VRAM：" + modelInfo.vram_required_MB + " MB");
+    }
+
+    // ========== Gemma 3 特殊處理 ==========
+    const isGemma3 =
+      modelId.toLowerCase().includes("gemma-3") ||
+      modelId.toLowerCase().includes("gemma3");
+
+    let engineConfig = {
+      initProgressCallback: progress => {
+        let percent = 0;
+
+        if (typeof progress.progress === "number") {
+          percent = progress.progress * 100;
+        }
+
+        const text = progress.text || "載入中...";
+        setProgress(percent, text);
+      }
+    };
+
+    // 只有 Gemma 3 才需要 overrides
+    if (isGemma3) {
+      engineConfig.appConfig = {
+        model_list: [
+          {
+            ...modelInfo,
+            overrides: {
+              ...(modelInfo.overrides || {}),
+              context_window_size: 4096,
+              sliding_window_size: -1   // 關鍵：解決衝突
+            }
+          }
+        ]
+      };
+
+      debug("\n已套用 Gemma 3 overrides（sliding_window_size = -1）");
+    }
+    // =====================================
+
+    state.engine = await CreateMLCEngine(modelId, engineConfig);
+
+    setProgress(100, "AI 模型已完成載入");
+    setStatus("AI 已就緒，可以開始分析", "ready");
+    debug("\n\n模型載入完成。");
+
+  } catch (error) {
+
+    console.error(error);
+
+    state.engine = null;
+
+    setStatus("AI 模型載入失敗", "error");
+    setProgress(0, "載入失敗");
+
+    debug(
+      "\n\n載入錯誤：\n" +
+      (error?.stack || error?.message || String(error))
+    );
+
+    alert(
+      "AI 模型載入失敗。\n\n" +
+      (error?.message || String(error)) +
+      "\n\n請確認瀏覽器支援 WebGPU，或嘗試重新整理頁面。"
+    );
+
+  } finally {
+
+    state.loading = false;
+
+    loadBtn.disabled = false;
+    modelSelect.disabled = false;
+    clearCacheBtn.disabled = false;
+
+    updateAIButtons();
+    hideOverlay();
+  }
+}
 
 
     // =========================================================
